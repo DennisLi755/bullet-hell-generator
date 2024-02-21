@@ -23,7 +23,35 @@ export type Composite = {
 
 export type Bullet = Pure | Delayed | Angled | Composite;
 
-// type Algebra = {
-//     pure: (x: number, y: number) => Bullet;
-//     delayed: ()
-// }
+type Algebra = {
+    pure: (x: number, y: number) => Bullet;
+    delayed: (t: number, b: Bullet) => Bullet;
+    angled: (a: number, b: Bullet) => Bullet;
+    composite: (...bullets: Bullet[]) => Bullet;
+}
+
+const Alg: Algebra = {
+    pure: (x, y) => ({
+        _tag: 'pure',
+        x: x,
+        y: y
+    }),
+    delayed: (delay, bullet) => ({
+        _tag: 'delayed',
+        delay,
+        bullet
+    }),
+    angled: (angle, bullet) => ({
+        _tag: 'angled',
+        angle,
+        bullet
+    }),
+    composite: (...bullets) => ({
+        _tag: 'composite',
+        bullets
+    })
+}
+
+export {
+    Alg
+}
