@@ -27,8 +27,8 @@ const updateBullets = () => {
         if (bullet.delay <= 0) {
             ctx.fillStyle = 'red';
             drawCircle(bullet.x + width / 2, bullet.y + width / 2, bulletRadius);
-            bullets.x += Math.cos(bullet.angle * (Math.PI / 180)) * spf * bulletSpeed;
-            bullets.y += Math.sin(bullet.angle * (Math.PI / 180)) * spf * bulletSpeed;
+            bullet.x += Math.cos(bullet.angle * (Math.PI / 180)) * spf * bulletSpeed;
+            bullet.y += Math.sin(bullet.angle * (Math.PI / 180)) * spf * bulletSpeed;
         }
         bullet.delay -= spf;
         return bullet;
@@ -81,7 +81,7 @@ const initBullets = (bullet, props) => {
 const init = () => {
     const line = (bullet) => (delay, n) => Bullet.Line(delay, n, bullet);
 
-    bulletObj = line(Bullet.Pure((0, 0)))(0.2, 20);
+    bulletObj = line(Bullet.Pure(0, 0))(0.2, 20);
 
     console.log(bulletObj);
     initBullets(bulletObj, {});
