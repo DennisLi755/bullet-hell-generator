@@ -1,5 +1,6 @@
 import {Bullet} from './bullets/bulletMethods.js';
 
+// bullet drawing/updating
 // drawing constraints
 const width = 600;
 const height = 600;
@@ -77,6 +78,8 @@ const initBullets = (bullet, props) => {
             break;
     }
 }
+
+// data management
 
 const init = () => {
     const line = (bullet) => (delay, n) => Bullet.Line(delay, n, bullet);
