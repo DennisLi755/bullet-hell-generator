@@ -81,7 +81,39 @@ const initBullets = (bullet, props) => {
 
 // data management
 
+const sendPost = async (saveForm) => {
+    const saveAction = saveForm.getAttribute('action');
+    const saveMethod = saveForm.getAttribute('method');
+
+    const nameField = saveForm.querySelector('#nameSave');
+    const dataField = bulletObj;
+
+    console.log(dataField);
+
+    const formData = `name=${nameField.value}&data=${JSON.stringify(dataField)}`;
+
+    let response = await fetch(saveAction, {
+        method: saveMethod,
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json'
+        },
+        body: formData,
+    });
+    console.log(response);
+}
+
 const init = () => {
+    const saveForm = document.querySelector('#saveForm');
+
+    const addPattern = (e) => {
+        e.preventDefault();
+        sendPost(saveForm);
+        return false;
+    }
+
+    saveForm.addEventListener('submit', addPattern)
+
     const line = (bullet) => (delay, n) => Bullet.Line(delay, n, bullet);
 
     bulletObj = line(Bullet.Pure(0, 0))(0.2, 20);
