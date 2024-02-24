@@ -51,8 +51,7 @@ const addPattern = (request, response, body) => {
         patterns[body.name] = {};
     }
 
-    patterns[body.name].name = body.name;
-    patterns[body.name].data = body.data;
+    patterns[body.name] = body.data;
 
     if (responseCode === 201) {
         responseJSON.message = `Created successfully`;

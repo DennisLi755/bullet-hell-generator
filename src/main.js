@@ -80,6 +80,18 @@ const initBullets = (bullet, props) => {
 }
 
 // data management
+const handleResponse = async (response, parseResponse, name) => {
+    if (parseResponse) {
+        let obj = await response.json();
+        console.log(obj);
+
+        if (obj.patterns) {
+            bulletObj = JSON.parse(obj.patterns[name]);
+            console.log(bulletObj);
+            initBullets(bulletObj, {});
+        }
+    }
+}
 
 const sendPost = async (saveForm) => {
     const saveAction = saveForm.getAttribute('action');
@@ -90,7 +102,7 @@ const sendPost = async (saveForm) => {
 
     console.log(dataField);
 
-    const formData = `name=${nameField.value}&data=${JSON.stringify(dataField)}`;
+    const formData = `name=${nameField.value}&data=${JSON.stringify(bulletObj)}`;
 
     let response = await fetch(saveAction, {
         method: saveMethod,
@@ -103,8 +115,23 @@ const sendPost = async (saveForm) => {
     console.log(response);
 }
 
+const sendGet = async (getForm) => {
+    const url = getForm.getAttribute('action');
+    const method = getForm.getAttribute('method');
+    const name = document.querySelector('#nameGet').value
+    let response = await fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json'
+        }
+    })
+    handleResponse(response, method === 'get', name);
+}
+
 const init = () => {
     const saveForm = document.querySelector('#saveForm');
+    const getForm = document.querySelector('#getForm');
 
     const addPattern = (e) => {
         e.preventDefault();
@@ -112,7 +139,14 @@ const init = () => {
         return false;
     }
 
-    saveForm.addEventListener('submit', addPattern)
+    const getPattern = (e) => {
+        e.preventDefault();
+        sendGet(getForm);
+        return false;
+    }
+
+    saveForm.addEventListener('submit', addPattern);
+    getForm.addEventListener('submit', getPattern);
 
     const line = (bullet) => (delay, n) => Bullet.Line(delay, n, bullet);
 
