@@ -148,9 +148,11 @@ const init = () => {
     saveForm.addEventListener('submit', addPattern);
     getForm.addEventListener('submit', getPattern);
 
-    const line = (bullet) => (delay, n) => Bullet.Line(delay, n, bullet);
+    //const line = (bullet) => (delay, n) => Bullet.Line(delay, n, bullet);
+    const spiral = (bullet) => (angle, n, time) => Bullet.Spiral(angle, n, time, bullet);
 
-    bulletObj = line(Bullet.Pure(0, 0))(0.2, 20);
+    //bulletObj = line(Bullet.Pure(0, 0))(0.2, 20);
+    bulletObj = spiral(Bullet.Pure(0, 0))(20, 50, 0.1);
 
     console.log(bulletObj);
     initBullets(bulletObj, {});

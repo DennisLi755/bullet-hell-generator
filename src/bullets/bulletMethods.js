@@ -10,6 +10,12 @@ const BulletTypes = {
             ...(Array(n).fill(bullet)).map((bullet, index) => 
                 BulletTypes.Delayed(delay * index, bullet))
         )
+    },
+    Spiral: (angle, n, time, bullets) => {
+        return BulletTypes.Composite(
+            ...(Array(n).fill(bullets)).map((bullet, index) => 
+                BulletTypes.Angled(angle * index, BulletTypes.Delayed(time * index, bullet)))
+        )
     }
 }
 
