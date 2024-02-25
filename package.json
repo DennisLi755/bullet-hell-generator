@@ -6,8 +6,7 @@
   "scripts": {
     "start": "node ./src/server.js",
     "pretest": "eslint ./src --fix",
-    "test": "echo \"Tests Complete\"",
-    "build": "tsc"
+    "test": "echo \"Tests Complete\""
   },
   "author": "Dennis Li",
   "license": "ISC",
