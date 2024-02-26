@@ -42,7 +42,7 @@ const addPattern = (request, response, body) => {
 
     if (!body.name || !body.data) {
         responseJSON.id = 'missingParams';
-        return responseJSON(request, response, 400, responsejSON);
+        return respondJSON(request, response, 400, responseJSON);
     }
 
     let responseCode = 204;

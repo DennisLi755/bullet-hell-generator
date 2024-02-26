@@ -86,6 +86,7 @@ const handleResponse = async (response, parseResponse, name) => {
         console.log(obj);
 
         if (obj.patterns) {
+            bullets = [];
             bulletObj = JSON.parse(obj.patterns[name]);
             console.log(bulletObj);
             initBullets(bulletObj, {});
