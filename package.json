@@ -4,19 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./src/server.js",
+    "start": "nodemon ./src/server.js",
     "pretest": "eslint ./src --fix",
     "test": "echo \"Tests Complete\""
   },
   "author": "Dennis Li",
   "license": "ISC",
   "devDependencies": {
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.29.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "blockly": "^10.4.2",
     "ts-node": "^10.9.2"
   }
 }

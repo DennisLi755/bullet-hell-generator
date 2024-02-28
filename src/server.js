@@ -9,17 +9,15 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 const urlStruct = {
   GET: {
     '/style.css': clientHandler.getCSS,
-    '/main.js': clientHandler.getJS,
+    '/hosted/bundle.js': clientHandler.getJS,
     '/': clientHandler.getIndex,
-    '/bullets/algebra.js': clientHandler.getAlgebra,
-    '/bullets/bulletMethods.js': clientHandler.getBulletMethods,
     '/getPatterns': jsonHandler.getPatterns,
-    notFound: jsonHandler.notFound
+    notFound: jsonHandler.notFound,
   },
   POST: {
-    '/addPattern': jsonHandler.addPattern
-  }
-}
+    '/addPattern': jsonHandler.addPattern,
+  },
+};
 
 const parseBody = (request, response, handler) => {
   const body = [];
@@ -42,17 +40,17 @@ const parseBody = (request, response, handler) => {
 };
 
 const onRequest = (request, response) => {
-    console.log(request.url);
-    const parsedUrl = url.parse(request.url);
-    if (request.method === 'POST') {
-      return parseBody(request, response, urlStruct[request.method][parsedUrl.pathname])
-    } else if (urlStruct[request.method][parsedUrl.pathname]) {
-      return urlStruct[request.method][parsedUrl.pathname](request, response);
-    } 
-      
-    return urlStruct[request.method].notFound(request, response);
+  console.log(request.url);
+  const parsedUrl = url.parse(request.url);
+  if (request.method === 'POST') {
+    return parseBody(request, response, urlStruct[request.method][parsedUrl.pathname]);
+  } if (urlStruct[request.method][parsedUrl.pathname]) {
+    return urlStruct[request.method][parsedUrl.pathname](request, response);
+  }
+
+  return urlStruct[request.method].notFound(request, response);
 };
-  
+
 http.createServer(onRequest).listen(port, () => {
   console.log(`Listening on port: 127.0.0.1:${port}`);
 });
