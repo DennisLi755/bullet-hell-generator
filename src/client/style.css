@@ -44,7 +44,7 @@
   #canvas {
     margin: auto;
     width: 100vh;
-    background-color: white;
+    background-color: black;
     image-rendering: crisp-edges;
   }
 

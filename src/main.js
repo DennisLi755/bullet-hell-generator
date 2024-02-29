@@ -180,13 +180,13 @@ Blockly.Blocks['bullet_block'] = {
         .appendField("Bullet");
     this.appendValueInput("Angle")
         .setCheck("Number")
-        .appendField("Angle");
+        .appendField("Angle: ");
     this.appendValueInput("x")
         .setCheck("Number")
-        .appendField("x");
+        .appendField("x: ");
     this.appendValueInput("y")
         .setCheck("Number")
-        .appendField("y");
+        .appendField("y: ");
     this.setInputsInline(true);
     this.setOutput(true, "Bullet");
     this.setColour(230);
