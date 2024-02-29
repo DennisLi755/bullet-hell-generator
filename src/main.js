@@ -1,7 +1,45 @@
-import { Bullet } from './bullets/bulletMethods.js';
+//import { Bullet } from './bullets/bulletMethods.js';
 import * as Blockly from 'blockly';
 import * as libraryBlocks from 'blockly/blocks';
 import {javascriptGenerator, Order} from 'blockly/javascript';
+
+const Alg = {
+  pure: (x, y) => ({
+    _tag: 'pure',
+    x,
+    y,
+  }),
+  delayed: (delay, bullet) => ({
+    _tag: 'delayed',
+    delay,
+    bullet,
+  }),
+  angled: (angle, bullet) => ({
+    _tag: 'angled',
+    angle,
+    bullet,
+  }),
+  composite: (...bullets) => ({
+    _tag: 'composite',
+    bullets,
+  }),
+};
+
+const Bullet = {
+  Pure: (x, y) => Alg.pure(x, y),
+  Delayed: (time, bullet) => Alg.delayed(time, bullet),
+  Angled: (angle, bullet) => Alg.angled(angle, bullet),
+  Composite: (...bullets) => Alg.composite(...bullets),
+  Line: (delay, n, bullet) => Bullet.Composite(
+    ...(Array(n).fill(bullet)).map((bullet, index) => Bullet.Delayed(delay * index, bullet)),
+  ),
+  Spiral: (angle, n, time, bullets) => Bullet.Composite(
+    ...(Array(n).fill(bullets)).map((bullet, index) => Bullet.Angled(
+      angle * index,
+      Bullet.Delayed(time * index, bullet),
+    )),
+  ),
+};
 
 // bullet drawing/updating
 // drawing constraints
@@ -161,7 +199,7 @@ javascriptGenerator.forBlock['bullet_block'] = (block, generator) => {
   let angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
   let x = generator.valueToCode(block, 'x', Order.ATOMIC);
   let y = generator.valueToCode(block, 'y', Order.ATOMIC);
-  let code =  `Bullet.Angled(${angle}, Bullet.Pure(${x}, ${y}))`;
+  let code =  `Bullet.Angled(${angle}, Bullet.Pure(${x}, ${y}));`;
 
   return code;
 }
@@ -187,8 +225,8 @@ let workspace = Blockly.inject(blocklyDiv, {toolbox: toolbox});
 
 const runCode = () => {
   const code = javascriptGenerator.workspaceToCode(workspace);
-  console.log(code);
-  eval(code);
+  bulletObj = eval(code);
+  initBullets(bulletObj, {});
 }
 
 const init = () => {
