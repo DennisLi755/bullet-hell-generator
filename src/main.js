@@ -1,5 +1,5 @@
 import { Bullet } from './bullets/bulletMethods.js';
-import * as Blockly from 'blockly/blocks';
+import * as Blockly from 'blockly';
 import * as libraryBlocks from 'blockly/blocks';
 import {javascriptGenerator} from 'blockly/javascript';
 
@@ -11,7 +11,6 @@ const fps = 60;
 const spf = 1 / fps;
 const bulletSpeed = 150;
 const bulletRadius = 7;
-const workspace = Blockly.inject('blocklyDiv', {});
 
 // set reference to the canvas element and set it's size
 const canvas = document.querySelector('#canvas');
@@ -165,38 +164,55 @@ const init = () => {
   setInterval(update, spf * 1000);
 };
 
-//blockly stuff
-// Blockly.Blocks['bullet_block'] = {
-//   init: function() {
-//     this.appendDummyInput()
-//         .appendField("Bullet");
-//     this.appendValueInput("ANGLE")
-//         .setCheck("Number")
-//         .appendField("Angle");
-//     this.appendValueInput("X")
-//         .setCheck("Number")
-//         .appendField("x");
-//     this.appendValueInput("Y")
-//         .setCheck("Number")
-//         .appendField("y");
-//     this.setInputsInline(true);
-//     this.setOutput(true, "Bullet");
-//     this.setColour(230);
-//     this.setTooltip("");
-//     this.setHelpUrl("");
-//   }
-// };
-
-// Blockly.JavaScript['bullet_block'] = (block) => {
-//   let angle = Blockly.JavaScript.valueToCode(block, 'ANGLE', Blockly.JavaScript.ORDER_ATOMIC);
-//   let x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_ATOMIC);
-//   let y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_ATOMIC);
-//   let code = Bullet.Angled(angle, Bullet.Pure(x, y));
-
-//   return [code, Blockly.JavaScript.ORDER_FUNCTION_CALL];
-// }
-
-// let bulletBlock = workspace.newBlock('bullet_block');
-// workspace.getToolbox().prepend(bulletBlock);
-
 window.onload = init;
+
+//blockly stuff
+const blocklyDiv = document.querySelector('#blocklyDiv');
+Blockly.Blocks['bullet_block'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("Bullet");
+    this.appendValueInput("ANGLE")
+        .setCheck("Number")
+        .appendField("Angle");
+    this.appendValueInput("X")
+        .setCheck("Number")
+        .appendField("x");
+    this.appendValueInput("Y")
+        .setCheck("Number")
+        .appendField("y");
+    this.setInputsInline(true);
+    this.setOutput(true, "Bullet");
+    this.setColour(230);
+    this.setTooltip("");
+    this.setHelpUrl("");
+  }
+};
+
+javascriptGenerator.forBlock['bullet_block'] = (block, generator) => {
+  let angle = generator.valueToCode(block, 'ANGLE', Blockly.JavaScript.ORDER_ATOMIC);
+  let x = generator.valueToCode(block, 'X', Blockly.JavaScript.ORDER_ATOMIC);
+  let y = generator.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_ATOMIC);
+  let code =  'Bullet.Angled(angle, Bullet.Pure(x, y))';
+
+  return code;
+}
+
+let toolbox = {
+  "kind": "flyoutToolbox",
+  "contents": [
+    {
+      'kind': 'block',
+      'type': 'math_number',
+      'fields': {
+        'NUM': 123,
+      },
+    },
+    {
+      "kind": "block",
+      "type": "bullet_block"
+    },
+  ]
+};
+
+let workspace = Blockly.inject(blocklyDiv, {toolbox: toolbox});
