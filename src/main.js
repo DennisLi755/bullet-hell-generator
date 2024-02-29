@@ -1,7 +1,7 @@
 import { Bullet } from './bullets/bulletMethods.js';
 import * as Blockly from 'blockly';
 import * as libraryBlocks from 'blockly/blocks';
-import {javascriptGenerator} from 'blockly/javascript';
+import {javascriptGenerator, Order} from 'blockly/javascript';
 
 // bullet drawing/updating
 // drawing constraints
@@ -133,6 +133,64 @@ const sendGet = async (getForm) => {
   handleResponse(response, method === 'get', name);
 };
 
+//blockly stuff
+const blocklyDiv = document.querySelector('#blocklyDiv');
+
+Blockly.Blocks['bullet_block'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("Bullet");
+    this.appendValueInput("Angle")
+        .setCheck("Number")
+        .appendField("Angle");
+    this.appendValueInput("x")
+        .setCheck("Number")
+        .appendField("x");
+    this.appendValueInput("y")
+        .setCheck("Number")
+        .appendField("y");
+    this.setInputsInline(true);
+    this.setOutput(true, "Bullet");
+    this.setColour(230);
+    this.setTooltip("");
+    this.setHelpUrl("");
+  }
+};
+
+javascriptGenerator.forBlock['bullet_block'] = (block, generator) => {
+  let angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
+  let x = generator.valueToCode(block, 'x', Order.ATOMIC);
+  let y = generator.valueToCode(block, 'y', Order.ATOMIC);
+  let code =  `Bullet.Angled(${angle}, Bullet.Pure(${x}, ${y}))`;
+
+  return code;
+}
+
+let toolbox = {
+  "kind": "flyoutToolbox",
+  "contents": [
+    {
+      'kind': 'block',
+      'type': 'math_number',
+      'fields': {
+        'NUM': 0,
+      },
+    },
+    {
+      "kind": "block",
+      "type": "bullet_block"
+    },
+  ]
+};
+
+let workspace = Blockly.inject(blocklyDiv, {toolbox: toolbox});
+
+const runCode = () => {
+  const code = javascriptGenerator.workspaceToCode(workspace);
+  console.log(code);
+  eval(code);
+}
+
 const init = () => {
   const saveForm = document.querySelector('#saveForm');
   const getForm = document.querySelector('#getForm');
@@ -151,6 +209,7 @@ const init = () => {
 
   saveForm.addEventListener('submit', addPattern);
   getForm.addEventListener('submit', getPattern);
+  document.querySelector('#button').addEventListener('click', runCode);
 
   //const line = (bullet) => (delay, n) => Bullet.Line(delay, n, bullet);
   const spiral = (bullet) => (angle, n, time) => Bullet.Spiral(angle, n, time, bullet);
@@ -165,54 +224,3 @@ const init = () => {
 };
 
 window.onload = init;
-
-//blockly stuff
-const blocklyDiv = document.querySelector('#blocklyDiv');
-Blockly.Blocks['bullet_block'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("Bullet");
-    this.appendValueInput("ANGLE")
-        .setCheck("Number")
-        .appendField("Angle");
-    this.appendValueInput("X")
-        .setCheck("Number")
-        .appendField("x");
-    this.appendValueInput("Y")
-        .setCheck("Number")
-        .appendField("y");
-    this.setInputsInline(true);
-    this.setOutput(true, "Bullet");
-    this.setColour(230);
-    this.setTooltip("");
-    this.setHelpUrl("");
-  }
-};
-
-javascriptGenerator.forBlock['bullet_block'] = (block, generator) => {
-  let angle = generator.valueToCode(block, 'ANGLE', Blockly.JavaScript.ORDER_ATOMIC);
-  let x = generator.valueToCode(block, 'X', Blockly.JavaScript.ORDER_ATOMIC);
-  let y = generator.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_ATOMIC);
-  let code =  'Bullet.Angled(angle, Bullet.Pure(x, y))';
-
-  return code;
-}
-
-let toolbox = {
-  "kind": "flyoutToolbox",
-  "contents": [
-    {
-      'kind': 'block',
-      'type': 'math_number',
-      'fields': {
-        'NUM': 123,
-      },
-    },
-    {
-      "kind": "block",
-      "type": "bullet_block"
-    },
-  ]
-};
-
-let workspace = Blockly.inject(blocklyDiv, {toolbox: toolbox});

@@ -11,20 +11,21 @@
 <body>
   <div id="app">
     <canvas id="canvas"></canvas>
+    <section id="text">
+      <h1>Bullet Hell Generator</h1>
+      <form id="saveForm" action="/addPattern" method="post">
+        <label for="name">Save Name: </label>
+        <input id="nameSave" type="text" name="name" />
+        <input type="submit" value="Save Pattern" />
+      </form>
+      <form id="getForm" action="/getPatterns" method="get">
+        <label for="name">Get Name: </label>
+        <input id="nameGet" type="text" name="name" />
+        <input type="submit" value="Get Pattern" />
+      </form>
+    </section>
+    <div id="blocklyDiv"></div>
+    <button id="button">Run Code</button>
   </div>
-  <section id="text">
-    <h1>Bullet Hell Generator</h1>
-    <form id="saveForm" action="/addPattern" method="post">
-      <label for="name">Save Name: </label>
-      <input id="nameSave" type="text" name="name" />
-      <input type="submit" value="Save Pattern" />
-    </form>
-    <form id="getForm" action="/getPatterns" method="get">
-      <label for="name">Get Name: </label>
-      <input id="nameGet" type="text" name="name" />
-      <input type="submit" value="Get Pattern" />
-    </form>
-  </section>
-  <div id="blocklyDiv" style="height: 480px; width: 2000px;"></div>
 </body>
 </html>
