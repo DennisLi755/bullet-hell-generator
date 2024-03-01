@@ -3,6 +3,7 @@ import * as Blockly from 'blockly';
 import * as libraryBlocks from 'blockly/blocks';
 import {javascriptGenerator, Order} from 'blockly/javascript';
 
+// Bullet Set Up
 const Alg = {
   pure: (x, y) => ({
     _tag: 'pure',
@@ -40,6 +41,11 @@ const Bullet = {
     )),
   ),
 };
+
+// String extended method
+String.prototype.replaceAt = function(index, replacement) {
+    return this.substring(0, index) + replacement + this.substring(index + replacement.length);
+}
 
 // bullet drawing/updating
 // drawing constraints
@@ -174,6 +180,7 @@ const sendGet = async (getForm) => {
 //blockly stuff
 const blocklyDiv = document.querySelector('#blocklyDiv');
 
+//singular bullet block
 Blockly.Blocks['bullet_block'] = {
   init: function() {
     this.appendDummyInput()
@@ -187,6 +194,23 @@ Blockly.Blocks['bullet_block'] = {
     this.appendValueInput("y")
         .setCheck("Number")
         .appendField("y: ");
+    this.setPreviousStatement(true); 
+    this.setNextStatement(true);
+    this.setInputsInline(true);
+    this.setOutput(true, "Bullet");
+    this.setTooltip('Makes a single bullet with a starting angle and position.');
+    this.setColour(230);
+  }
+};
+
+//composite block
+Blockly.Blocks['composite_block'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("Composite");
+    this.appendStatementInput("Bullets")
+        .setCheck("Bullet")
+        .appendField("Bullets: ");
     this.setInputsInline(true);
     this.setOutput(true, "Bullet");
     this.setColour(230);
@@ -199,7 +223,22 @@ javascriptGenerator.forBlock['bullet_block'] = (block, generator) => {
   let angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
   let x = generator.valueToCode(block, 'x', Order.ATOMIC);
   let y = generator.valueToCode(block, 'y', Order.ATOMIC);
-  let code =  `Bullet.Angled(${angle}, Bullet.Pure(${x}, ${y}));`;
+  let code =  `Bullet.Angled(${angle}, Bullet.Pure(${x}, ${y})) `;
+
+  return code;
+}
+
+javascriptGenerator.forBlock['composite_block'] = (block, generator) => {
+  let bullets = generator.statementToCode(block, 'Bullets');
+  if (bullets.includes(') ')) {
+    for (let i = 0; i < bullets.length; i++) {
+      if (bullets[i] == ')' && bullets[i+1] == ' ') {
+        bullets = bullets.replaceAt(i + 1, ',');
+      }
+    }
+  }
+  console.log(bullets);
+  let code =  `Bullet.Composite(${bullets})`;
 
   return code;
 }
@@ -218,6 +257,10 @@ let toolbox = {
       "kind": "block",
       "type": "bullet_block"
     },
+    {
+      "kind": "block",
+      "type": "composite_block"
+    },
   ]
 };
 
@@ -225,7 +268,8 @@ let workspace = Blockly.inject(blocklyDiv, {toolbox: toolbox});
 
 const runCode = () => {
   const code = javascriptGenerator.workspaceToCode(workspace);
-  bulletObj = eval(code);
+  console.log(code);
+  bulletObj = eval(code)
   initBullets(bulletObj, {});
 }
 
