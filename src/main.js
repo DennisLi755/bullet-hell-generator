@@ -197,7 +197,6 @@ Blockly.Blocks['bullet_block'] = {
     this.setPreviousStatement(true); 
     this.setNextStatement(true);
     this.setInputsInline(true);
-    this.setOutput(true, "Bullet");
     this.setTooltip('Makes a single bullet with a starting angle and position.');
     this.setColour(230);
   }
@@ -212,7 +211,57 @@ Blockly.Blocks['composite_block'] = {
         .setCheck("Bullet")
         .appendField("Bullets: ");
     this.setInputsInline(true);
-    this.setOutput(true, "Bullet");
+    this.setPreviousStatement(true); 
+    this.setNextStatement(true);
+    this.setColour(230);
+    this.setTooltip("");
+    this.setHelpUrl("");
+  }
+};
+
+//line block
+Blockly.Blocks['line_block'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("Line");
+    this.appendValueInput("Delay")
+        .setCheck("Number")
+        .appendField("Delay: ");
+    this.appendValueInput("Number")
+        .setCheck("Number")
+        .appendField("Number: ");
+    this.appendStatementInput("Bullet")
+        .setCheck("Bullet")
+        .appendField("Bullet: ");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true); 
+    this.setNextStatement(true);
+    this.setColour(230);
+    this.setTooltip("");
+    this.setHelpUrl("");
+  }
+};
+
+//spiral block
+Blockly.Blocks['spiral_block'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("Spiral");
+    this.appendValueInput("Angle")
+        .setCheck("Number")
+        .appendField("Angle: ");
+    this.appendValueInput("Number")
+        .setCheck("Number")
+        .appendField("Number: ");
+    this.appendValueInput("Time")
+        .setCheck("Number")
+        .appendField("Time: ");
+    this.appendStatementInput("Bullet")
+        .setCheck("Bullet")
+        .appendField("Bullet: ");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true); 
+    this.setNextStatement(true);
     this.setColour(230);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -237,8 +286,28 @@ javascriptGenerator.forBlock['composite_block'] = (block, generator) => {
       }
     }
   }
-  console.log(bullets);
-  let code =  `Bullet.Composite(${bullets})`;
+  let code =  `Bullet.Composite(${bullets}) `;
+
+  return code;
+}
+
+javascriptGenerator.forBlock['line_block'] = (block, generator) => {
+  let delay = generator.valueToCode(block, 'Delay', Order.ATOMIC);
+  let number = generator.valueToCode(block, 'Number', Order.ATOMIC);
+  let bullet = generator.statementToCode(block, 'Bullet');
+
+  let code = `Bullet.Line(${delay}, ${number}, ${bullet}) `;
+
+  return code;
+}
+
+javascriptGenerator.forBlock['spiral_block'] = (block, generator) => {
+  let angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
+  let number = generator.valueToCode(block, 'Number', Order.ATOMIC);
+  let time = generator.valueToCode(block, 'Time', Order.ATOMIC);
+  let bullet = generator.statementToCode(block, 'Bullet');
+
+  let code = `Bullet.Spiral(${angle}, ${number}, ${time}, ${bullet}) `;
 
   return code;
 }
@@ -255,11 +324,24 @@ let toolbox = {
     },
     {
       "kind": "block",
-      "type": "bullet_block"
+      "type": "bullet_block",
+      'fields': {
+        'Angle': 0,
+        'X': 0,
+        'Y': 0
+      },
     },
     {
       "kind": "block",
       "type": "composite_block"
+    },
+    {
+      "kind": "block",
+      "type": "line_block"
+    },
+    {
+      "kind": "block",
+      "type": "spiral_block"
     },
   ]
 };
@@ -269,7 +351,7 @@ let workspace = Blockly.inject(blocklyDiv, {toolbox: toolbox});
 const runCode = () => {
   const code = javascriptGenerator.workspaceToCode(workspace);
   console.log(code);
-  bulletObj = eval(code)
+  bulletObj = eval(code);
   initBullets(bulletObj, {});
 }
 
