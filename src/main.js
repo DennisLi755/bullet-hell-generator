@@ -1,4 +1,3 @@
-//import { Bullet } from './bullets/bulletMethods.js';
 import * as Blockly from 'blockly';
 import * as libraryBlocks from 'blockly/blocks';
 import {javascriptGenerator, Order} from 'blockly/javascript';
@@ -40,6 +39,9 @@ const Bullet = {
       Bullet.Delayed(time * index, bullet),
     )),
   ),
+  Spread: (angle, bullet) => {
+    return Bullet.Spiral(angle, Math.floor(360 / angle), 0, bullet);
+  }
 };
 
 // String extended method
@@ -255,9 +257,29 @@ Blockly.Blocks['spiral_block'] = {
     this.appendValueInput("Number")
         .setCheck("Number")
         .appendField("Number: ");
-    this.appendValueInput("Time")
+    this.appendValueInput("Delay")
         .setCheck("Number")
-        .appendField("Time: ");
+        .appendField("Delay: ");
+    this.appendStatementInput("Bullet")
+        .setCheck("Bullet")
+        .appendField("Bullet: ");
+    this.setPreviousStatement(true); 
+    this.setOutput(true, 'Bullet');
+    this.setNextStatement(true);
+    this.setColour(230);
+    this.setTooltip("");
+    this.setHelpUrl("");
+  }
+};
+
+//spiral block
+Blockly.Blocks['spread_block'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("Spread");
+    this.appendValueInput("Angle")
+        .setCheck("Number")
+        .appendField("Angle: ");
     this.appendStatementInput("Bullet")
         .setCheck("Bullet")
         .appendField("Bullet: ");
@@ -274,9 +296,7 @@ javascriptGenerator.forBlock['bullet_block'] = (block, generator) => {
   let angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
   let x = generator.valueToCode(block, 'x', Order.ATOMIC);
   let y = generator.valueToCode(block, 'y', Order.ATOMIC);
-  let code =  `Bullet.Angled(${angle}, Bullet.Pure(${x}, ${y})) `;
-
-  return code;
+  return `Bullet.Angled(${angle}, Bullet.Pure(${x}, ${y})) `;
 }
 
 javascriptGenerator.forBlock['composite_block'] = (block, generator) => {
@@ -288,9 +308,7 @@ javascriptGenerator.forBlock['composite_block'] = (block, generator) => {
       }
     }
   }
-  let code =  `Bullet.Composite(${bullets}) `;
-
-  return code;
+  return `Bullet.Composite(${bullets}) `;
 }
 
 javascriptGenerator.forBlock['line_block'] = (block, generator) => {
@@ -298,21 +316,25 @@ javascriptGenerator.forBlock['line_block'] = (block, generator) => {
   let number = generator.valueToCode(block, 'Number', Order.ATOMIC);
   let bullet = generator.statementToCode(block, 'Bullet');
 
-  let code = `Bullet.Line(${delay}, ${number}, ${bullet}) `;
-
-  return code;
+  return `Bullet.Line(${delay}, ${number}, ${bullet}) `;
 }
 
 javascriptGenerator.forBlock['spiral_block'] = (block, generator) => {
   let angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
   let number = generator.valueToCode(block, 'Number', Order.ATOMIC);
-  let time = generator.valueToCode(block, 'Time', Order.ATOMIC);
+  let time = generator.valueToCode(block, 'Delay', Order.ATOMIC);
   let bullet = generator.statementToCode(block, 'Bullet');
 
-  let code = `Bullet.Spiral(${angle}, ${number}, ${time}, ${bullet}) `;
-
-  return code;
+  return `Bullet.Spiral(${angle}, ${number}, ${time}, ${bullet}) `;
 }
+
+javascriptGenerator.forBlock['spread_block'] = (block, generator) => {
+  let angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
+  let bullet = generator.statementToCode(block, 'Bullet');
+
+  return `Bullet.Spread(${angle}, ${bullet}) `;
+}
+
 
 let toolbox = {
   "kind": "flyoutToolbox",
@@ -344,6 +366,10 @@ let toolbox = {
     {
       "kind": "block",
       "type": "spiral_block"
+    },
+    {
+      "kind": "block",
+      "type": "spread_block"
     },
   ]
 };
@@ -389,9 +415,10 @@ const init = () => {
 
   //const line = (bullet) => (delay, n) => Bullet.Line(delay, n, bullet);
   const spiral = (bullet) => (angle, n, time) => Bullet.Spiral(angle, n, time, bullet);
+  const star = (bullet) => (n) => Bullet.Spiral(360 / n, n, 0, bullet);
 
   //bulletObj = line(Bullet.Pure(0, 0))(0.2, 20);
-  bulletObj = spiral(Bullet.Pure(0, 0))(20, 50, 0.1);
+  bulletObj = star(Bullet.Pure(0, 0, 0))(20);
 
   console.log(bulletObj);
   initBullets(bulletObj, {});
