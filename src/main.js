@@ -241,32 +241,6 @@ Blockly.Blocks['line_block'] = {
     this.setColour(230);
     this.setTooltip("");
     this.setHelpUrl("");
-    this.connectionCount = 0;
-
-    this.setOnChange(this.onCustomBlockChange);
-  },
-  onCustomBlockChange: function(changeEvent) {
-    // Check if a new block is being connected
-    if (changeEvent.type === Blockly.Events.BLOCK_MOVE) {
-      var block = changeEvent.blockId && Blockly.Blocks[changeEvent.blockId];
-
-      // Check if the connected block is of the correct type
-      if (block && block.type === 'line_block') {
-        // Count the number of connections
-        var connections = this.outputConnection.targetConnection ?
-          [this.outputConnection.targetConnection] :
-          [];
-        this.connectionCount = connections.length;
-
-        // Check if the limit is exceeded
-        if (this.connectionCount > 1) {
-          // Disconnect the exceeding connections
-          for (var i = 1; i < this.connectionCount; i++) {
-            connections[i].sourceBlock_.unplug();
-          }
-        }
-      }
-    }
   }
 };
 
@@ -374,9 +348,19 @@ let toolbox = {
   ]
 };
 
-let workspace = Blockly.inject(blocklyDiv, {toolbox: toolbox});
+let workspace = Blockly.inject(blocklyDiv, {
+  toolbox: toolbox,
+  move:{
+    scrollbars: {
+      horizontal: true,
+      vertical: true
+    },
+    drag: true,
+    wheel: true}
+});
 
 const runCode = () => {
+  bullets = [];
   const code = javascriptGenerator.workspaceToCode(workspace);
   console.log(code);
   bulletObj = eval(code);

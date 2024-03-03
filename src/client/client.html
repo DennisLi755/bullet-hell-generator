@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bullet Hell Generator</title>
+  <title>Bullet Hell Pattern Generator</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
   <script type="module" src="../../hosted/bundle.js"></script>
 </head>
@@ -12,19 +12,21 @@
   <div id="app">
     <canvas id="canvas"></canvas>
     <section id="text">
-      <h1>Bullet Hell Generator</h1>
-      <form id="saveForm" action="/addPattern" method="post">
-        <label for="name">Save Name: </label>
-        <input id="nameSave" type="text" name="name" />
-        <input type="submit" value="Save Pattern" />
-      </form>
-      <form id="getForm" action="/getPatterns" method="get">
-        <label for="name">Get Name: </label>
-        <input id="nameGet" type="text" name="name" />
-        <input type="submit" value="Get Pattern" />
-      </form>
+      <h1>Bullet Hell Pattern Generator</h1>
+      <div id="forms">
+        <form id="saveForm" action="/addPattern" method="post">
+          <label for="name">Save Name: </label>
+          <input id="nameSave" type="text" name="name" />
+          <input type="submit" value="Save Pattern" />
+        </form>
+        <form id="getForm" action="/getPatterns" method="get">
+          <label for="name">Get Name: </label>
+          <input id="nameGet" type="text" name="name" />
+          <input type="submit" value="Get Pattern" />
+        </form>
+      </div>
+      <button id="button">Generate Pattern</button>
       <div id="blocklyDiv"></div>
-      <button id="button">Run Code</button>
     </section>
   </div>
 </body>
