@@ -195,8 +195,8 @@ Blockly.Blocks['bullet_block'] = {
         .setCheck("Number")
         .appendField("y: ");
     this.setPreviousStatement(true); 
+    this.setOutput(true, 'Bullet');
     this.setNextStatement(true);
-    this.setInputsInline(true);
     this.setTooltip('Makes a single bullet with a starting angle and position.');
     this.setColour(230);
   }
@@ -212,6 +212,7 @@ Blockly.Blocks['composite_block'] = {
         .appendField("Bullets: ");
     this.setInputsInline(true);
     this.setPreviousStatement(true); 
+    this.setOutput(true, 'Bullet');
     this.setNextStatement(true);
     this.setColour(230);
     this.setTooltip("");
@@ -231,14 +232,41 @@ Blockly.Blocks['line_block'] = {
         .setCheck("Number")
         .appendField("Number: ");
     this.appendStatementInput("Bullet")
-        .setCheck("Bullet")
+        .setCheck('Bullet')
         .appendField("Bullet: ");
     this.setInputsInline(true);
     this.setPreviousStatement(true); 
+    this.setOutput(true, 'Bullet');
     this.setNextStatement(true);
     this.setColour(230);
     this.setTooltip("");
     this.setHelpUrl("");
+    this.connectionCount = 0;
+
+    this.setOnChange(this.onCustomBlockChange);
+  },
+  onCustomBlockChange: function(changeEvent) {
+    // Check if a new block is being connected
+    if (changeEvent.type === Blockly.Events.BLOCK_MOVE) {
+      var block = changeEvent.blockId && Blockly.Blocks[changeEvent.blockId];
+
+      // Check if the connected block is of the correct type
+      if (block && block.type === 'line_block') {
+        // Count the number of connections
+        var connections = this.outputConnection.targetConnection ?
+          [this.outputConnection.targetConnection] :
+          [];
+        this.connectionCount = connections.length;
+
+        // Check if the limit is exceeded
+        if (this.connectionCount > 1) {
+          // Disconnect the exceeding connections
+          for (var i = 1; i < this.connectionCount; i++) {
+            connections[i].sourceBlock_.unplug();
+          }
+        }
+      }
+    }
   }
 };
 
@@ -259,8 +287,8 @@ Blockly.Blocks['spiral_block'] = {
     this.appendStatementInput("Bullet")
         .setCheck("Bullet")
         .appendField("Bullet: ");
-    this.setInputsInline(true);
     this.setPreviousStatement(true); 
+    this.setOutput(true, 'Bullet');
     this.setNextStatement(true);
     this.setColour(230);
     this.setTooltip("");
