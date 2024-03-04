@@ -6,6 +6,7 @@ const jsonHandler = require('./jsonResponses.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
+// URLstruct that defines the endpoints to their respective functions
 const urlStruct = {
   GET: {
     '/style.css': clientHandler.getCSS,
@@ -19,6 +20,7 @@ const urlStruct = {
   },
 };
 
+// Function that takes the body of a request and parses it
 const parseBody = (request, response, handler) => {
   const body = [];
   request.on('error', (err) => {
@@ -39,6 +41,7 @@ const parseBody = (request, response, handler) => {
   });
 };
 
+// Function that runs everytime a request is made to the server
 const onRequest = (request, response) => {
   console.log(request.url);
   const parsedUrl = url.parse(request.url);
