@@ -2,6 +2,8 @@ import * as Blockly from 'blockly';
 import { javascriptGenerator, Order } from 'blockly/javascript';
 
 // Bullet Set Up
+// Algebra that defines the most basic types of bullets
+// Returns a Javascript Object defining the properties of bullets
 const Alg = {
   pure: (x, y) => ({
     _tag: 'pure',
@@ -24,6 +26,7 @@ const Alg = {
   }),
 };
 
+// Bullet Object that defines/implements all functions for creating bullet patterns
 const Bullet = {
   Pure: (x, y) => Alg.pure(x, y),
   Delayed: (time, bullet) => Alg.delayed(time, bullet),
@@ -41,10 +44,13 @@ const Bullet = {
   Spread: (angle, bullet) => Bullet.Spiral(angle, Math.floor(360 / angle), 0, bullet),
 };
 
+// Helper function for searching through a string and replacing at a certain index
+// Repurposed code from this StackOverflow thread: https://stackoverflow.com/questions/1431094/how-do-i-replace-a-character-at-a-specific-index-in-javascript
 const replaceAt = (string, index, replace) => string.substring(0, index) + replace
   + string.substring(index + replace.length);
-// bullet drawing/updating
-// drawing constraints
+
+// Bullet drawing/updating
+// Drawing constraints
 const width = 600;
 const height = 600;
 const fps = 60;
@@ -52,15 +58,18 @@ const spf = 1 / fps;
 const bulletSpeed = 150;
 const bulletRadius = 7;
 
-// set reference to the canvas element and set it's size
+// Set reference to the canvas element and set it's size
 const canvas = document.querySelector('#canvas');
 canvas.width = width;
 canvas.height = height;
 const ctx = canvas.getContext('2d');
 
-let bulletObj = {}; // output from the algebra (in the form of json)
-let bullets = []; // an array of 2d objects containing x, y, delay, and angle properties
+// Output from the algebra (in the form of json)
+let bulletObj = {};
+// An array of 2d objects containing x, y, delay, and angle properties
+let bullets = [];
 
+// Simple function to draw circles with Canvas
 const drawCircle = (x, y, r) => {
   if (x > 0 && x < width
         && y > 0 && y < height) {
@@ -70,6 +79,7 @@ const drawCircle = (x, y, r) => {
   }
 };
 
+// Updates the positions and color of bullets found in the array
 const updateBullets = () => {
   bullets = bullets.map((bullet) => {
     const updatedBullet = { ...bullet };
@@ -84,18 +94,25 @@ const updateBullets = () => {
   });
 };
 
+// Clears the canvas
 const clearCanvas = () => {
   ctx.clearRect(0, 0, width, height);
 };
 
+// Update function for Canvas
 const update = () => {
   clearCanvas();
   updateBullets();
 };
 
+// Initializes the bullets array with the JS object returned from the
+// Algebras/Bullet map
+// Takes in the JS object and any props (since this function is recursive)
 const initBullets = (bullet, props) => {
   const newProps = { ...props };
 
+  // Switch statement depending on the current bullets tag (which determines its type)
+  // Different implementation/logic depending on the bullet type
   switch (bullet._tag) {
     case 'composite':
       for (let i = 0; i < bullet.bullets.length; i++) {
@@ -126,8 +143,11 @@ const initBullets = (bullet, props) => {
   }
 };
 
-// data management
+// Data management
+// Handles get requests
 const handleResponse = async (response, parseResponse, name) => {
+  // Parses the response and populates the appropriate object (bulletObj) with what was grabbed
+  // from the server
   if (parseResponse) {
     const obj = await response.json();
     console.log(obj);
@@ -141,14 +161,12 @@ const handleResponse = async (response, parseResponse, name) => {
   }
 };
 
+// Sends a post request taking data from the page
 const sendPost = async (saveForm) => {
   const saveAction = saveForm.getAttribute('action');
   const saveMethod = saveForm.getAttribute('method');
 
   const nameField = saveForm.querySelector('#nameSave');
-  const dataField = bulletObj;
-
-  console.log(dataField);
 
   const formData = `name=${nameField.value}&data=${JSON.stringify(bulletObj)}`;
 
@@ -163,6 +181,7 @@ const sendPost = async (saveForm) => {
   console.log(response);
 };
 
+// Sends a get request from the inputted name on the form
 const sendGet = async (getForm) => {
   const url = getForm.getAttribute('action');
   const method = getForm.getAttribute('method');
@@ -180,7 +199,7 @@ const sendGet = async (getForm) => {
 // blockly stuff
 const blocklyDiv = document.querySelector('#blocklyDiv');
 
-// singular bullet block
+// Singular bullet block
 Blockly.Blocks.bullet_block = {
   init() {
     this.appendDummyInput()
@@ -202,7 +221,7 @@ Blockly.Blocks.bullet_block = {
   },
 };
 
-// composite block
+// Composite block
 Blockly.Blocks.composite_block = {
   init() {
     this.appendDummyInput()
@@ -219,7 +238,7 @@ Blockly.Blocks.composite_block = {
   },
 };
 
-// line block
+// Line block
 Blockly.Blocks.line_block = {
   init() {
     this.appendDummyInput()
@@ -242,7 +261,7 @@ Blockly.Blocks.line_block = {
   },
 };
 
-// spiral block
+// Spiral block
 Blockly.Blocks.spiral_block = {
   init() {
     this.appendDummyInput()
@@ -267,7 +286,7 @@ Blockly.Blocks.spiral_block = {
   },
 };
 
-// spiral block
+// Spread block
 Blockly.Blocks.spread_block = {
   init() {
     this.appendDummyInput()
@@ -286,6 +305,7 @@ Blockly.Blocks.spread_block = {
   },
 };
 
+// Generates code for the bullet block
 javascriptGenerator.forBlock.bullet_block = (block, generator) => {
   const angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
   const x = generator.valueToCode(block, 'x', Order.ATOMIC);
@@ -293,6 +313,7 @@ javascriptGenerator.forBlock.bullet_block = (block, generator) => {
   return `Bullet.Angled(${angle}, Bullet.Pure(${x}, ${y})) `;
 };
 
+// Generates code for the composite block
 javascriptGenerator.forBlock.composite_block = (block, generator) => {
   let blockBullets = generator.statementToCode(block, 'Bullets');
   if (blockBullets.includes(') ')) {
@@ -305,6 +326,7 @@ javascriptGenerator.forBlock.composite_block = (block, generator) => {
   return `Bullet.Composite(${blockBullets}) `;
 };
 
+// Generates code for the Line block
 javascriptGenerator.forBlock.line_block = (block, generator) => {
   const delay = generator.valueToCode(block, 'Delay', Order.ATOMIC);
   const number = generator.valueToCode(block, 'Number', Order.ATOMIC);
@@ -313,6 +335,7 @@ javascriptGenerator.forBlock.line_block = (block, generator) => {
   return `Bullet.Line(${delay}, ${number}, ${bullet}) `;
 };
 
+// Generates code for the Spiral block
 javascriptGenerator.forBlock.spiral_block = (block, generator) => {
   const angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
   const number = generator.valueToCode(block, 'Number', Order.ATOMIC);
@@ -322,6 +345,7 @@ javascriptGenerator.forBlock.spiral_block = (block, generator) => {
   return `Bullet.Spiral(${angle}, ${number}, ${time}, ${bullet}) `;
 };
 
+// Generates code for the Spread block
 javascriptGenerator.forBlock.spread_block = (block, generator) => {
   const angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
   const bullet = generator.statementToCode(block, 'Bullet');
@@ -329,6 +353,7 @@ javascriptGenerator.forBlock.spread_block = (block, generator) => {
   return `Bullet.Spread(${angle}, ${bullet}) `;
 };
 
+// Toolbox object defining what blocks are in the program
 const toolbox = {
   kind: 'flyoutToolbox',
   contents: [
@@ -362,6 +387,7 @@ const toolbox = {
   ],
 };
 
+// Workspace variable which takes in the toolbox and properties for scrolling in the workspace
 const workspace = Blockly.inject(blocklyDiv, {
   toolbox,
   move: {
@@ -374,13 +400,17 @@ const workspace = Blockly.inject(blocklyDiv, {
   },
 });
 
+// Function that runs when the 'Generate Pattern' button is pressed.
+// Grabs the code generated from the workspace (as a string) and uses eval() to run it
 const runCode = () => {
   bullets = [];
   const code = javascriptGenerator.workspaceToCode(workspace);
+  // The usage of the eval() function violates ESLint's 'no-eval' rule.
   bulletObj = eval(code);
   initBullets(bulletObj, {});
 };
 
+// Initial function linking components together
 const init = () => {
   const saveForm = document.querySelector('#saveForm');
   const getForm = document.querySelector('#getForm');
