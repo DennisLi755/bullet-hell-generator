@@ -1,6 +1,5 @@
 import * as Blockly from 'blockly';
-import * as libraryBlocks from 'blockly/blocks';
-import {javascriptGenerator, Order} from 'blockly/javascript';
+import { javascriptGenerator, Order } from 'blockly/javascript';
 
 // Bullet Set Up
 const Alg = {
@@ -31,7 +30,7 @@ const Bullet = {
   Angled: (angle, bullet) => Alg.angled(angle, bullet),
   Composite: (...bullets) => Alg.composite(...bullets),
   Line: (delay, n, bullet) => Bullet.Composite(
-    ...(Array(n).fill(bullet)).map((bullet, index) => Bullet.Delayed(delay * index, bullet)),
+    ...(Array(n).fill(bullet)).map((bullets, index) => Bullet.Delayed(delay * index, bullets)),
   ),
   Spiral: (angle, n, time, bullets) => Bullet.Composite(
     ...(Array(n).fill(bullets)).map((bullet, index) => Bullet.Angled(
@@ -39,16 +38,11 @@ const Bullet = {
       Bullet.Delayed(time * index, bullet),
     )),
   ),
-  Spread: (angle, bullet) => {
-    return Bullet.Spiral(angle, Math.floor(360 / angle), 0, bullet);
-  }
+  Spread: (angle, bullet) => Bullet.Spiral(angle, Math.floor(360 / angle), 0, bullet),
 };
 
-// String extended method
-String.prototype.replaceAt = function(index, replacement) {
-    return this.substring(0, index) + replacement + this.substring(index + replacement.length);
-}
-
+const replaceAt = (string, index, replace) => string.substring(0, index) + replace
+  + string.substring(index + replace.length);
 // bullet drawing/updating
 // drawing constraints
 const width = 600;
@@ -62,28 +56,10 @@ const bulletRadius = 7;
 const canvas = document.querySelector('#canvas');
 canvas.width = width;
 canvas.height = height;
-const ctx = canvas?.getContext('2d');
+const ctx = canvas.getContext('2d');
 
 let bulletObj = {}; // output from the algebra (in the form of json)
 let bullets = []; // an array of 2d objects containing x, y, delay, and angle properties
-
-const update = () => {
-  clearCanvas();
-  updateBullets();
-};
-
-const updateBullets = () => {
-  bullets = bullets.map((bullet) => {
-    if (bullet.delay <= 0) {
-      ctx.fillStyle = 'red';
-      drawCircle(bullet.x + width / 2, bullet.y + width / 2, bulletRadius);
-      bullet.x += Math.cos(bullet.angle * (Math.PI / 180)) * spf * bulletSpeed;
-      bullet.y += Math.sin(bullet.angle * (Math.PI / 180)) * spf * bulletSpeed;
-    }
-    bullet.delay -= spf;
-    return bullet;
-  });
-};
 
 const drawCircle = (x, y, r) => {
   if (x > 0 && x < width
@@ -94,8 +70,27 @@ const drawCircle = (x, y, r) => {
   }
 };
 
+const updateBullets = () => {
+  bullets = bullets.map((bullet) => {
+    const updatedBullet = { ...bullet };
+    if (updatedBullet.delay <= 0) {
+      ctx.fillStyle = 'red';
+      drawCircle(updatedBullet.x + width / 2, updatedBullet.y + width / 2, bulletRadius);
+      updatedBullet.x += Math.cos(updatedBullet.angle * (Math.PI / 180)) * spf * bulletSpeed;
+      updatedBullet.y += Math.sin(updatedBullet.angle * (Math.PI / 180)) * spf * bulletSpeed;
+    }
+    updatedBullet.delay -= spf;
+    return updatedBullet;
+  });
+};
+
 const clearCanvas = () => {
   ctx.clearRect(0, 0, width, height);
+};
+
+const update = () => {
+  clearCanvas();
+  updateBullets();
 };
 
 const initBullets = (bullet, props) => {
@@ -108,13 +103,13 @@ const initBullets = (bullet, props) => {
       }
       break;
     case 'delayed':
-      newProps.delay ? newProps.delay += bullet.delay
-        : newProps.delay = bullet.delay;
+      if (newProps.delay) newProps.delay += bullet.delay;
+      else newProps.delay = bullet.delay;
       initBullets(bullet.bullet, newProps);
       break;
     case 'angled':
-      newProps.angle ? newProps.angle += bullet.angle
-        : newProps.angle = bullet.angle;
+      if (newProps.angle) newProps.angle += bullet.angle;
+      else newProps.angle = bullet.angle;
       initBullets(bullet.bullet, newProps);
       break;
     case 'pure':
@@ -124,6 +119,9 @@ const initBullets = (bullet, props) => {
         delay: props.delay || 0,
         angle: props.angle || 0,
       });
+      break;
+    default:
+      console.log('bullet type not known');
       break;
   }
 };
@@ -179,219 +177,209 @@ const sendGet = async (getForm) => {
   handleResponse(response, method === 'get', name);
 };
 
-//blockly stuff
+// blockly stuff
 const blocklyDiv = document.querySelector('#blocklyDiv');
 
-//singular bullet block
-Blockly.Blocks['bullet_block'] = {
-  init: function() {
+// singular bullet block
+Blockly.Blocks.bullet_block = {
+  init() {
     this.appendDummyInput()
-        .appendField("Bullet");
-    this.appendValueInput("Angle")
-        .setCheck("Number")
-        .appendField("Angle: ");
-    this.appendValueInput("x")
-        .setCheck("Number")
-        .appendField("x: ");
-    this.appendValueInput("y")
-        .setCheck("Number")
-        .appendField("y: ");
-    this.setPreviousStatement(true); 
+      .appendField('Bullet');
+    this.appendValueInput('Angle')
+      .setCheck('Number')
+      .appendField('Angle: ');
+    this.appendValueInput('x')
+      .setCheck('Number')
+      .appendField('x: ');
+    this.appendValueInput('y')
+      .setCheck('Number')
+      .appendField('y: ');
+    this.setPreviousStatement(true);
     this.setOutput(true, 'Bullet');
     this.setNextStatement(true);
-    this.setTooltip('Makes a single bullet with a starting angle and position.');
+    this.setTooltip('Makes a bullet with a starting angle and position.\nRequired to be at the end of all other statements.');
     this.setColour(230);
-  }
+  },
 };
 
-//composite block
-Blockly.Blocks['composite_block'] = {
-  init: function() {
+// composite block
+Blockly.Blocks.composite_block = {
+  init() {
     this.appendDummyInput()
-        .appendField("Composite");
-    this.appendStatementInput("Bullets")
-        .setCheck("Bullet")
-        .appendField("Bullets: ");
+      .appendField('Composite');
+    this.appendStatementInput('Bullets')
+      .setCheck('Bullet')
+      .appendField('Bullets: ');
     this.setInputsInline(true);
-    this.setPreviousStatement(true); 
+    this.setPreviousStatement(true);
     this.setOutput(true, 'Bullet');
     this.setNextStatement(true);
+    this.setTooltip('Multiple bullets/functions can be composed here.\nThis is the only block where multiple bullets would be correctly evaluated.');
     this.setColour(230);
-    this.setTooltip("");
-    this.setHelpUrl("");
-  }
+  },
 };
 
-//line block
-Blockly.Blocks['line_block'] = {
-  init: function() {
+// line block
+Blockly.Blocks.line_block = {
+  init() {
     this.appendDummyInput()
-        .appendField("Line");
-    this.appendValueInput("Delay")
-        .setCheck("Number")
-        .appendField("Delay: ");
-    this.appendValueInput("Number")
-        .setCheck("Number")
-        .appendField("Number: ");
-    this.appendStatementInput("Bullet")
-        .setCheck('Bullet')
-        .appendField("Bullet: ");
+      .appendField('Line');
+    this.appendValueInput('Delay')
+      .setCheck('Number')
+      .appendField('Delay: ');
+    this.appendValueInput('Number')
+      .setCheck('Number')
+      .appendField('Number: ');
+    this.appendStatementInput('Bullet')
+      .setCheck('Bullet')
+      .appendField('Bullet: ');
     this.setInputsInline(true);
-    this.setPreviousStatement(true); 
+    this.setPreviousStatement(true);
     this.setOutput(true, 'Bullet');
     this.setNextStatement(true);
+    this.setTooltip('Makes a line of bullets with the following attributes:\nDelay: The amount of time between each bullet creation\nNumber: The number of bullets\nBullet: The bullet type');
     this.setColour(230);
-    this.setTooltip("");
-    this.setHelpUrl("");
-  }
+  },
 };
 
-//spiral block
-Blockly.Blocks['spiral_block'] = {
-  init: function() {
+// spiral block
+Blockly.Blocks.spiral_block = {
+  init() {
     this.appendDummyInput()
-        .appendField("Spiral");
-    this.appendValueInput("Angle")
-        .setCheck("Number")
-        .appendField("Angle: ");
-    this.appendValueInput("Number")
-        .setCheck("Number")
-        .appendField("Number: ");
-    this.appendValueInput("Delay")
-        .setCheck("Number")
-        .appendField("Delay: ");
-    this.appendStatementInput("Bullet")
-        .setCheck("Bullet")
-        .appendField("Bullet: ");
-    this.setPreviousStatement(true); 
+      .appendField('Spiral');
+    this.appendValueInput('Angle')
+      .setCheck('Number')
+      .appendField('Angle: ');
+    this.appendValueInput('Number')
+      .setCheck('Number')
+      .appendField('Number: ');
+    this.appendValueInput('Delay')
+      .setCheck('Number')
+      .appendField('Delay: ');
+    this.appendStatementInput('Bullet')
+      .setCheck('Bullet')
+      .appendField('Bullet: ');
+    this.setPreviousStatement(true);
     this.setOutput(true, 'Bullet');
     this.setNextStatement(true);
+    this.setTooltip('Makes a spiral of bullets with the following attributes:\nAngle (Degrees): The angle difference between each bullet creation\nNumber: The number of bullets\nDelay: The amount of time between each bullet creation\nBullet: The bullet type');
     this.setColour(230);
-    this.setTooltip("");
-    this.setHelpUrl("");
-  }
+  },
 };
 
-//spiral block
-Blockly.Blocks['spread_block'] = {
-  init: function() {
+// spiral block
+Blockly.Blocks.spread_block = {
+  init() {
     this.appendDummyInput()
-        .appendField("Spread");
-    this.appendValueInput("Angle")
-        .setCheck("Number")
-        .appendField("Angle: ");
-    this.appendStatementInput("Bullet")
-        .setCheck("Bullet")
-        .appendField("Bullet: ");
-    this.setPreviousStatement(true); 
+      .appendField('Spread');
+    this.appendValueInput('Angle')
+      .setCheck('Number')
+      .appendField('Angle: ');
+    this.appendStatementInput('Bullet')
+      .setCheck('Bullet')
+      .appendField('Bullet: ');
+    this.setPreviousStatement(true);
     this.setOutput(true, 'Bullet');
     this.setNextStatement(true);
+    this.setTooltip('Makes a spread of bullets with the following attributes:\nAngle (Degrees): The angle difference between each bullet creation\nBullet: The bullet type');
     this.setColour(230);
-    this.setTooltip("");
-    this.setHelpUrl("");
-  }
+  },
 };
 
-javascriptGenerator.forBlock['bullet_block'] = (block, generator) => {
-  let angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
-  let x = generator.valueToCode(block, 'x', Order.ATOMIC);
-  let y = generator.valueToCode(block, 'y', Order.ATOMIC);
+javascriptGenerator.forBlock.bullet_block = (block, generator) => {
+  const angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
+  const x = generator.valueToCode(block, 'x', Order.ATOMIC);
+  const y = generator.valueToCode(block, 'y', Order.ATOMIC);
   return `Bullet.Angled(${angle}, Bullet.Pure(${x}, ${y})) `;
-}
+};
 
-javascriptGenerator.forBlock['composite_block'] = (block, generator) => {
-  let bullets = generator.statementToCode(block, 'Bullets');
-  if (bullets.includes(') ')) {
-    for (let i = 0; i < bullets.length; i++) {
-      if (bullets[i] == ')' && bullets[i+1] == ' ') {
-        bullets = bullets.replaceAt(i + 1, ',');
+javascriptGenerator.forBlock.composite_block = (block, generator) => {
+  let blockBullets = generator.statementToCode(block, 'Bullets');
+  if (blockBullets.includes(') ')) {
+    for (let i = 0; i < blockBullets.length; i++) {
+      if (bullets[i] === ')' && bullets[i + 1] === ' ') {
+        blockBullets = replaceAt(blockBullets, i + 1, ',');
       }
     }
   }
-  return `Bullet.Composite(${bullets}) `;
-}
-
-javascriptGenerator.forBlock['line_block'] = (block, generator) => {
-  let delay = generator.valueToCode(block, 'Delay', Order.ATOMIC);
-  let number = generator.valueToCode(block, 'Number', Order.ATOMIC);
-  let bullet = generator.statementToCode(block, 'Bullet');
-
-  return `Bullet.Line(${delay}, ${number}, ${bullet}) `;
-}
-
-javascriptGenerator.forBlock['spiral_block'] = (block, generator) => {
-  let angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
-  let number = generator.valueToCode(block, 'Number', Order.ATOMIC);
-  let time = generator.valueToCode(block, 'Delay', Order.ATOMIC);
-  let bullet = generator.statementToCode(block, 'Bullet');
-
-  return `Bullet.Spiral(${angle}, ${number}, ${time}, ${bullet}) `;
-}
-
-javascriptGenerator.forBlock['spread_block'] = (block, generator) => {
-  let angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
-  let bullet = generator.statementToCode(block, 'Bullet');
-
-  return `Bullet.Spread(${angle}, ${bullet}) `;
-}
-
-
-let toolbox = {
-  "kind": "flyoutToolbox",
-  "contents": [
-    {
-      'kind': 'block',
-      'type': 'math_number',
-      'fields': {
-        'NUM': 0,
-      },
-    },
-    {
-      "kind": "block",
-      "type": "bullet_block",
-      'fields': {
-        'Angle': 0,
-        'X': 0,
-        'Y': 0
-      },
-    },
-    {
-      "kind": "block",
-      "type": "composite_block"
-    },
-    {
-      "kind": "block",
-      "type": "line_block"
-    },
-    {
-      "kind": "block",
-      "type": "spiral_block"
-    },
-    {
-      "kind": "block",
-      "type": "spread_block"
-    },
-  ]
+  return `Bullet.Composite(${blockBullets}) `;
 };
 
-let workspace = Blockly.inject(blocklyDiv, {
-  toolbox: toolbox,
-  move:{
+javascriptGenerator.forBlock.line_block = (block, generator) => {
+  const delay = generator.valueToCode(block, 'Delay', Order.ATOMIC);
+  const number = generator.valueToCode(block, 'Number', Order.ATOMIC);
+  const bullet = generator.statementToCode(block, 'Bullet');
+
+  return `Bullet.Line(${delay}, ${number}, ${bullet}) `;
+};
+
+javascriptGenerator.forBlock.spiral_block = (block, generator) => {
+  const angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
+  const number = generator.valueToCode(block, 'Number', Order.ATOMIC);
+  const time = generator.valueToCode(block, 'Delay', Order.ATOMIC);
+  const bullet = generator.statementToCode(block, 'Bullet');
+
+  return `Bullet.Spiral(${angle}, ${number}, ${time}, ${bullet}) `;
+};
+
+javascriptGenerator.forBlock.spread_block = (block, generator) => {
+  const angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
+  const bullet = generator.statementToCode(block, 'Bullet');
+
+  return `Bullet.Spread(${angle}, ${bullet}) `;
+};
+
+const toolbox = {
+  kind: 'flyoutToolbox',
+  contents: [
+    {
+      kind: 'block',
+      type: 'math_number',
+      fields: {
+        NUM: 0,
+      },
+    },
+    {
+      kind: 'block',
+      type: 'bullet_block',
+    },
+    {
+      kind: 'block',
+      type: 'composite_block',
+    },
+    {
+      kind: 'block',
+      type: 'line_block',
+    },
+    {
+      kind: 'block',
+      type: 'spiral_block',
+    },
+    {
+      kind: 'block',
+      type: 'spread_block',
+    },
+  ],
+};
+
+const workspace = Blockly.inject(blocklyDiv, {
+  toolbox,
+  move: {
     scrollbars: {
       horizontal: true,
-      vertical: true
+      vertical: true,
     },
     drag: true,
-    wheel: true}
+    wheel: true,
+  },
 });
 
 const runCode = () => {
   bullets = [];
   const code = javascriptGenerator.workspaceToCode(workspace);
-  console.log(code);
   bulletObj = eval(code);
   initBullets(bulletObj, {});
-}
+};
 
 const init = () => {
   const saveForm = document.querySelector('#saveForm');
@@ -412,13 +400,6 @@ const init = () => {
   saveForm.addEventListener('submit', addPattern);
   getForm.addEventListener('submit', getPattern);
   document.querySelector('#button').addEventListener('click', runCode);
-
-  //const line = (bullet) => (delay, n) => Bullet.Line(delay, n, bullet);
-  const spiral = (bullet) => (angle, n, time) => Bullet.Spiral(angle, n, time, bullet);
-  const star = (bullet) => (n) => Bullet.Spiral(360 / n, n, 0, bullet);
-
-  //bulletObj = line(Bullet.Pure(0, 0))(0.2, 20);
-  bulletObj = star(Bullet.Pure(0, 0, 0))(20);
 
   console.log(bulletObj);
   initBullets(bulletObj, {});
