@@ -3,8 +3,7 @@
   "rules": {
     "no-underscore-dangle" : "off",
     "no-plusplus": "off",
-    "import/extensions": "off",
-    "no-eval": "off"
+    "import/extensions": "off"
   },
   "env": {
     "browser": true,
