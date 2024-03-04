@@ -318,7 +318,7 @@ javascriptGenerator.forBlock.composite_block = (block, generator) => {
   let blockBullets = generator.statementToCode(block, 'Bullets');
   if (blockBullets.includes(') ')) {
     for (let i = 0; i < blockBullets.length; i++) {
-      if (bullets[i] === ')' && bullets[i + 1] === ' ') {
+      if (blockBullets[i] === ')' && blockBullets[i + 1] === ' ') {
         blockBullets = replaceAt(blockBullets, i + 1, ',');
       }
     }
@@ -405,6 +405,7 @@ const workspace = Blockly.inject(blocklyDiv, {
 const runCode = () => {
   bullets = [];
   const code = javascriptGenerator.workspaceToCode(workspace);
+  console.log(code);
   // The usage of the eval() function violates ESLint's 'no-eval' rule.
   // I tried researching other methods to run code as a string, but other methods like using the
   // Function constructor violated an ESLint rule as well.
