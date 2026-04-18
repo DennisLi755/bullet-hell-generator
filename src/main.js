@@ -46,7 +46,7 @@ const Bullet = {
 
 const encodePattern = async (obj) => {
   const json = JSON.stringify(obj);
-  const stream = new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'));
+  const stream = new Blob([json]).stream().pipeThrough(new CompressionStream('deflate-raw'));
   const buf = await new Response(stream).arrayBuffer();
   const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
   return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -55,7 +55,7 @@ const encodePattern = async (obj) => {
 const decodePattern = async (str) => {
   const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
   const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
   const text = await new Response(stream).text();
   return JSON.parse(text);
 };
@@ -379,10 +379,7 @@ const runCode = async () => {
   // process and how I got to this point.
   bulletObj = eval(code);
   initBullets(bulletObj, {});
-  const encoded = await encodePattern({
-    pattern: bulletObj,
-    workspace: Blockly.serialization.workspaces.save(workspace),
-  });
+  const encoded = await encodePattern(Blockly.serialization.workspaces.save(workspace));
   history.replaceState(null, '', `?p=${encoded}`);
 };
 
@@ -396,14 +393,14 @@ const init = async () => {
   if (p) {
     try {
       const decoded = await decodePattern(p);
-      // New format: { pattern, workspace }. Old URLs encode the ADT directly (_tag present).
-      if (decoded.pattern !== undefined) {
-        if (decoded.workspace) {
-          Blockly.serialization.workspaces.load(decoded.workspace, workspace, { recordUndo: false });
-        }
-        bulletObj = decoded.pattern;
-      } else {
+      // Current format: workspace serialization JSON.
+      // Legacy formats: { pattern, workspace } object, or raw ADT (_tag present) — view-only.
+      if (decoded._tag !== undefined) {
         bulletObj = decoded;
+      } else {
+        const workspaceState = decoded.workspace ?? decoded;
+        Blockly.serialization.workspaces.load(workspaceState, workspace, { recordUndo: false });
+        bulletObj = eval(javascriptGenerator.workspaceToCode(workspace));
       }
     } catch (e) {
       console.warn('Failed to decode pattern from URL', e);
