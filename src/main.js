@@ -44,6 +44,22 @@ const Bullet = {
   Spread: (angle, bullet) => Bullet.Spiral(angle, Math.floor(360 / angle), 0, bullet),
 };
 
+const encodePattern = async (obj) => {
+  const json = JSON.stringify(obj);
+  const stream = new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'));
+  const buf = await new Response(stream).arrayBuffer();
+  const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+};
+
+const decodePattern = async (str) => {
+  const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+  const text = await new Response(stream).text();
+  return JSON.parse(text);
+};
+
 // Helper function for searching through a string and replacing at a certain index
 // Repurposed code from this StackOverflow thread: https://stackoverflow.com/questions/1431094/how-do-i-replace-a-character-at-a-specific-index-in-javascript
 const replaceAt = (string, index, replace) => string.substring(0, index) + replace
@@ -349,7 +365,7 @@ const workspace = Blockly.inject(blocklyDiv, {
 
 // Function that runs when the 'Generate Pattern' button is pressed.
 // Grabs the code generated from the workspace (as a string) and uses eval() to run it
-const runCode = () => {
+const runCode = async () => {
   bullets = [];
   const code = javascriptGenerator.workspaceToCode(workspace);
   console.log(code);
@@ -371,15 +387,25 @@ const runCode = () => {
   // process and how I got to this point.
   bulletObj = eval(code);
   initBullets(bulletObj, {});
+  const encoded = await encodePattern(bulletObj);
+  history.replaceState(null, '', `?p=${encoded}`);
 };
 
 // Initial function linking components together
-const init = () => {
+const init = async () => {
   document.querySelector('#button').addEventListener('click', runCode);
 
-  console.log(bulletObj);
+  const params = new URLSearchParams(window.location.search);
+  const p = params.get('p');
+  if (p) {
+    try {
+      bulletObj = await decodePattern(p);
+    } catch (e) {
+      console.warn('Failed to decode pattern from URL', e);
+    }
+  }
+
   initBullets(bulletObj, {});
-  console.log(bullets);
   setInterval(update, spf * 1000);
 };
 
