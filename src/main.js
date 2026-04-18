@@ -1,5 +1,5 @@
 import * as Blockly from 'blockly';
-import { javascriptGenerator, Order } from 'blockly/javascript';
+import { javascriptGenerator } from 'blockly/javascript';
 
 // Bullet Set Up
 // Algebra that defines the most basic types of bullets
@@ -167,15 +167,15 @@ Blockly.Blocks.bullet_block = {
   init() {
     this.appendDummyInput()
       .appendField('Bullet');
-    this.appendValueInput('Angle')
-      .setCheck('Number')
-      .appendField('Angle: ');
-    this.appendValueInput('x')
-      .setCheck('Number')
-      .appendField('x: ');
-    this.appendValueInput('y')
-      .setCheck('Number')
-      .appendField('y: ');
+    this.appendDummyInput()
+      .appendField('Angle: ')
+      .appendField(new Blockly.FieldNumber(0), 'Angle');
+    this.appendDummyInput()
+      .appendField('x: ')
+      .appendField(new Blockly.FieldNumber(0), 'x');
+    this.appendDummyInput()
+      .appendField('y: ')
+      .appendField(new Blockly.FieldNumber(0), 'y');
     this.setPreviousStatement(true);
     this.setOutput(true, 'Bullet');
     this.setNextStatement(true);
@@ -206,16 +206,15 @@ Blockly.Blocks.line_block = {
   init() {
     this.appendDummyInput()
       .appendField('Line');
-    this.appendValueInput('Delay')
-      .setCheck('Number')
-      .appendField('Delay: ');
-    this.appendValueInput('Number')
-      .setCheck('Number')
-      .appendField('Number: ');
+    this.appendDummyInput()
+      .appendField('Delay: ')
+      .appendField(new Blockly.FieldNumber(0.5, 0), 'Delay');
+    this.appendDummyInput()
+      .appendField('Number: ')
+      .appendField(new Blockly.FieldNumber(5, 1), 'Number');
     this.appendStatementInput('Bullet')
       .setCheck('Bullet')
       .appendField('Bullet: ');
-    this.setInputsInline(true);
     this.setPreviousStatement(true);
     this.setOutput(true, 'Bullet');
     this.setNextStatement(true);
@@ -229,15 +228,15 @@ Blockly.Blocks.spiral_block = {
   init() {
     this.appendDummyInput()
       .appendField('Spiral');
-    this.appendValueInput('Angle')
-      .setCheck('Number')
-      .appendField('Angle: ');
-    this.appendValueInput('Number')
-      .setCheck('Number')
-      .appendField('Number: ');
-    this.appendValueInput('Delay')
-      .setCheck('Number')
-      .appendField('Delay: ');
+    this.appendDummyInput()
+      .appendField('Angle: ')
+      .appendField(new Blockly.FieldNumber(45), 'Angle');
+    this.appendDummyInput()
+      .appendField('Number: ')
+      .appendField(new Blockly.FieldNumber(8, 1), 'Number');
+    this.appendDummyInput()
+      .appendField('Delay: ')
+      .appendField(new Blockly.FieldNumber(0, 0), 'Delay');
     this.appendStatementInput('Bullet')
       .setCheck('Bullet')
       .appendField('Bullet: ');
@@ -254,9 +253,9 @@ Blockly.Blocks.spread_block = {
   init() {
     this.appendDummyInput()
       .appendField('Spread');
-    this.appendValueInput('Angle')
-      .setCheck('Number')
-      .appendField('Angle: ');
+    this.appendDummyInput()
+      .appendField('Angle: ')
+      .appendField(new Blockly.FieldNumber(45, 1), 'Angle');
     this.appendStatementInput('Bullet')
       .setCheck('Bullet')
       .appendField('Bullet: ');
@@ -269,10 +268,10 @@ Blockly.Blocks.spread_block = {
 };
 
 // Generates code for the bullet block
-javascriptGenerator.forBlock.bullet_block = (block, generator) => {
-  const angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
-  const x = generator.valueToCode(block, 'x', Order.ATOMIC);
-  const y = generator.valueToCode(block, 'y', Order.ATOMIC);
+javascriptGenerator.forBlock.bullet_block = (block) => {
+  const angle = block.getFieldValue('Angle');
+  const x = block.getFieldValue('x');
+  const y = block.getFieldValue('y');
   return `Bullet.Angled(${angle}, Bullet.Pure(${x}, ${y})) `;
 };
 
@@ -291,8 +290,8 @@ javascriptGenerator.forBlock.composite_block = (block, generator) => {
 
 // Generates code for the Line block
 javascriptGenerator.forBlock.line_block = (block, generator) => {
-  const delay = generator.valueToCode(block, 'Delay', Order.ATOMIC);
-  const number = generator.valueToCode(block, 'Number', Order.ATOMIC);
+  const delay = block.getFieldValue('Delay');
+  const number = block.getFieldValue('Number');
   const bullet = generator.statementToCode(block, 'Bullet');
 
   return `Bullet.Line(${delay}, ${number}, ${bullet}) `;
@@ -300,9 +299,9 @@ javascriptGenerator.forBlock.line_block = (block, generator) => {
 
 // Generates code for the Spiral block
 javascriptGenerator.forBlock.spiral_block = (block, generator) => {
-  const angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
-  const number = generator.valueToCode(block, 'Number', Order.ATOMIC);
-  const time = generator.valueToCode(block, 'Delay', Order.ATOMIC);
+  const angle = block.getFieldValue('Angle');
+  const number = block.getFieldValue('Number');
+  const time = block.getFieldValue('Delay');
   const bullet = generator.statementToCode(block, 'Bullet');
 
   return `Bullet.Spiral(${angle}, ${number}, ${time}, ${bullet}) `;
@@ -310,7 +309,7 @@ javascriptGenerator.forBlock.spiral_block = (block, generator) => {
 
 // Generates code for the Spread block
 javascriptGenerator.forBlock.spread_block = (block, generator) => {
-  const angle = generator.valueToCode(block, 'Angle', Order.ATOMIC);
+  const angle = block.getFieldValue('Angle');
   const bullet = generator.statementToCode(block, 'Bullet');
 
   return `Bullet.Spread(${angle}, ${bullet}) `;
@@ -320,13 +319,6 @@ javascriptGenerator.forBlock.spread_block = (block, generator) => {
 const toolbox = {
   kind: 'flyoutToolbox',
   contents: [
-    {
-      kind: 'block',
-      type: 'math_number',
-      fields: {
-        NUM: 0,
-      },
-    },
     {
       kind: 'block',
       type: 'bullet_block',
@@ -387,19 +379,32 @@ const runCode = async () => {
   // process and how I got to this point.
   bulletObj = eval(code);
   initBullets(bulletObj, {});
-  const encoded = await encodePattern(bulletObj);
+  const encoded = await encodePattern({
+    pattern: bulletObj,
+    workspace: Blockly.serialization.workspaces.save(workspace),
+  });
   history.replaceState(null, '', `?p=${encoded}`);
 };
 
 // Initial function linking components together
 const init = async () => {
   document.querySelector('#button').addEventListener('click', runCode);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Enter') runCode(); });
 
   const params = new URLSearchParams(window.location.search);
   const p = params.get('p');
   if (p) {
     try {
-      bulletObj = await decodePattern(p);
+      const decoded = await decodePattern(p);
+      // New format: { pattern, workspace }. Old URLs encode the ADT directly (_tag present).
+      if (decoded.pattern !== undefined) {
+        if (decoded.workspace) {
+          Blockly.serialization.workspaces.load(decoded.workspace, workspace, { recordUndo: false });
+        }
+        bulletObj = decoded.pattern;
+      } else {
+        bulletObj = decoded;
+      }
     } catch (e) {
       console.warn('Failed to decode pattern from URL', e);
     }
