@@ -143,59 +143,6 @@ const initBullets = (bullet, props) => {
   }
 };
 
-// Data management
-// Handles get requests
-const handleResponse = async (response, parseResponse, name) => {
-  // Parses the response and populates the appropriate object (bulletObj) with what was grabbed
-  // from the server
-  if (parseResponse) {
-    const obj = await response.json();
-    console.log(obj);
-
-    if (obj.patterns) {
-      bullets = [];
-      bulletObj = JSON.parse(obj.patterns[name]);
-      console.log(bulletObj);
-      initBullets(bulletObj, {});
-    }
-  }
-};
-
-// Sends a post request taking data from the page
-const sendPost = async (saveForm) => {
-  const saveAction = saveForm.getAttribute('action');
-  const saveMethod = saveForm.getAttribute('method');
-
-  const nameField = saveForm.querySelector('#nameSave');
-
-  const formData = `name=${nameField.value}&data=${JSON.stringify(bulletObj)}`;
-
-  const response = await fetch(saveAction, {
-    method: saveMethod,
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Accept: 'application/json',
-    },
-    body: formData,
-  });
-  console.log(response);
-};
-
-// Sends a get request from the inputted name on the form
-const sendGet = async (getForm) => {
-  const url = getForm.getAttribute('action');
-  const method = getForm.getAttribute('method');
-  const name = document.querySelector('#nameGet').value;
-  const response = await fetch(url, {
-    method,
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Accept: 'application/json',
-    },
-  });
-  handleResponse(response, method === 'get', name);
-};
-
 // blockly stuff
 const blocklyDiv = document.querySelector('#blocklyDiv');
 
@@ -428,23 +375,6 @@ const runCode = () => {
 
 // Initial function linking components together
 const init = () => {
-  const saveForm = document.querySelector('#saveForm');
-  const getForm = document.querySelector('#getForm');
-
-  const addPattern = (e) => {
-    e.preventDefault();
-    sendPost(saveForm);
-    return false;
-  };
-
-  const getPattern = (e) => {
-    e.preventDefault();
-    sendGet(getForm);
-    return false;
-  };
-
-  saveForm.addEventListener('submit', addPattern);
-  getForm.addEventListener('submit', getPattern);
   document.querySelector('#button').addEventListener('click', runCode);
 
   console.log(bulletObj);
